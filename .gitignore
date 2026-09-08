@@ -14,3 +14,6 @@ read_xls.py
 test_*.js
 screenshot-*.png
 *.png
+
+# 测试样本（不部署）
+test-files/
