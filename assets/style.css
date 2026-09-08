@@ -1,0 +1,134 @@
+* { box-sizing: border-box; }
+body { margin:0; font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; color:#222; background:#f5f5f4; font-size:13px; }
+
+/* 登录 */
+.login-view { min-height:100vh; display:flex; align-items:center; justify-content:center; background:#f5f5f4; }
+.login-card { background:#fff; border:0.5px solid #ddd; border-radius:12px; padding:28px 32px; width:340px; }
+.login-card h1 { font-size:18px; margin:0 0 6px; font-weight:500; }
+.login-sub { color:#888; font-size:12px; margin:0 0 20px; }
+.login-card label { display:block; font-size:12px; color:#555; margin:12px 0 4px; }
+.login-card input { width:100%; padding:8px 10px; border:0.5px solid #ccc; border-radius:8px; font-size:13px; }
+.login-card button { width:100%; margin-top:18px; padding:9px; background:#185FA5; color:#fff; border:none; border-radius:8px; font-size:13px; cursor:pointer; }
+.login-card button:hover { background:#0C447C; }
+.login-error { color:#A32D2D; font-size:12px; min-height:16px; margin:8px 0 0; }
+.login-hint { color:#aaa; font-size:11px; margin-top:14px; }
+
+/* 应用布局 */
+.app-view { min-height:100vh; }
+.topbar { display:flex; justify-content:space-between; align-items:center; padding:10px 20px; background:#fff; border-bottom:0.5px solid #e2e2e0; }
+.brand { font-weight:500; font-size:14px; }
+.user-area { font-size:12px; color:#555; display:flex; align-items:center; gap:10px; }
+.user-area button { padding:4px 10px; border:0.5px solid #ccc; background:#fff; border-radius:6px; cursor:pointer; font-size:12px; }
+.layout { display:flex; min-height:calc(100vh - 49px); }
+.sidebar { width:210px; min-width:210px; max-width:210px; flex-shrink:0; background:#fff; border-right:0.5px solid #e2e2e0; padding:14px; overflow:hidden; }
+.side-title { font-size:12px; color:#888; margin-bottom:8px; }
+.std-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+.std-tab { font-size:11px; padding:3px 8px; border-radius:6px; border:0.5px solid #ddd; cursor:pointer; }
+.std-tab.cu { background:#E6F1FB; color:#185FA5; border-color:#185FA5; }
+.std-tab.eco { background:#EAF3DE; color:#3B6D11; border-color:#3B6D11; }
+.std-tab.active { outline:2px solid #185FA5; }
+.nav-menu { list-style:none; padding:0; margin:0; }
+.nav-menu li { padding:9px 12px; border-radius:8px; cursor:pointer; font-size:13px; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.nav-menu li:hover { background:#f0f0ef; }
+.nav-menu li.active { background:#E6F1FB; color:#185FA5; font-weight:500; }
+
+/* 主区 */
+.main-content { flex:1; padding:20px; }
+.metric-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+.metric { background:#fff; border:0.5px solid #e2e2e0; border-radius:8px; padding:14px 16px; min-width:150px; }
+.metric .label { font-size:12px; color:#888; }
+.metric .value { font-size:22px; font-weight:500; margin-top:4px; }
+.std-card { background:#fff; border:0.5px solid #e2e2e0; border-radius:10px; padding:14px 16px; margin-bottom:12px; }
+.std-card h3 { margin:0 0 8px; font-size:14px; }
+.quota-bar { height:8px; background:#eee; border-radius:4px; overflow:hidden; margin:6px 0; }
+.quota-bar > span { display:block; height:100%; background:#185FA5; }
+.badge { font-size:11px; padding:1px 6px; border-radius:6px; display:inline-block; }
+.badge.cu { background:#E6F1FB; color:#185FA5; }
+.badge.eco { background:#EAF3DE; color:#3B6D11; }
+.badge.ok { background:#EAF3DE; color:#3B6D11; }
+.badge.warn { background:#FCEBEB; color:#A32D2D; }
+table { width:100%; border-collapse:collapse; background:#fff; font-size:12px; margin-bottom:14px; }
+th, td { border:0.5px solid #e2e2e0; padding:8px 10px; text-align:left; }
+th { background:#f7f7f6; font-weight:500; }
+.flow { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 16px; }
+.flow-step { padding:6px 10px; border:0.5px solid #ddd; border-radius:8px; font-size:12px; }
+.flow-step.done { background:#EAF3DE; color:#3B6D11; border-color:#3B6D11; }
+.flow-step.active { background:#E6F1FB; color:#185FA5; border-color:#185FA5; font-weight:500; }
+.card { background:#fff; border:0.5px solid #e2e2e0; border-radius:10px; padding:16px; margin-bottom:14px; }
+.card h3 { margin:0 0 10px; font-size:14px; }
+.card h4 { margin:14px 0 8px; font-size:13px; color:#555; }
+.btn { padding:6px 12px; border:0.5px solid #ccc; background:#fff; border-radius:8px; cursor:pointer; font-size:13px; }
+.btn.primary { background:#185FA5; color:#fff; border-color:#185FA5; }
+.btn.danger { background:#A32D2D; color:#fff; border-color:#A32D2D; }
+.btn.danger:hover { background:#861E1E; }
+.empty { color:#999; font-size:13px; padding:20px; text-align:center; }
+.section-title { font-size:14px; font-weight:500; margin:0 0 12px; }
+
+/* 首页流程图 */
+.home-flow { margin-bottom:18px; }
+.home-flow .flow { justify-content:space-between; }
+.home-flow .flow-step { flex:1; text-align:center; padding:10px 6px; }
+
+/* 表格标红 */
+.td-missing { color:#A32D2D; background:#FFF5F5; font-weight:500; }
+.td-invalid { color:#A32D2D; background:#FFF5F5; font-weight:500; }
+.td-ok { color:#2E7D32; background:#F8FFF8; }
+
+/* 订单详情字段 */
+.kv-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px; }
+.kv-item { background:#f7f7f6; padding:8px 10px; border-radius:6px; }
+.kv-key { display:block; font-size:11px; color:#888; margin-bottom:2px; }
+.kv-val { font-size:13px; color:#222; font-weight:500; }
+.anomaly-reason { color:#A32D2D; font-weight:500; font-size:12px; }
+.order-info-table th:nth-child(4) { min-width:220px; }
+.edit-input { width:100%; padding:6px 8px; border:0.5px solid #ccc; border-radius:6px; font-size:13px; }
+
+/* 原纱额度汇总表 */
+.quota-table th, .quota-table td { white-space:nowrap; }
+.quota-table th:nth-child(1) { width:50px; text-align:center; }
+.quota-table td:nth-child(6) { text-align:right; }
+
+/* 标准模块内子标签 */
+.sub-tabs { display:flex; gap:8px; margin-bottom:16px; }
+.sub-tab { padding:6px 14px; border:0.5px solid #ccc; border-radius:8px; cursor:pointer; font-size:13px; background:#fff; }
+.sub-tab:hover { background:#f7f7f6; }
+.sub-tab.active { background:#E6F1FB; color:#185FA5; border-color:#185FA5; font-weight:500; }
+.nav-menu li .badge { margin-left:6px; }
+
+/* 订单表格排版：100%缩放下列固定宽度、表头不换行 */
+.order-table { table-layout:fixed; width:auto; min-width:100%; font-size:11px; }
+.order-table th { white-space:nowrap; padding:6px 8px; text-align:center; }
+.order-table td { padding:6px 8px; vertical-align:middle; white-space:nowrap; }
+.order-table td.td-missing,
+.order-table td.td-invalid,
+.order-table td.td-ok { white-space:nowrap; }
+.badge { white-space:nowrap; }
+/* 列宽定义 */
+.order-table th:nth-child(1), .order-table td:nth-child(1) { width:70px; text-align:center; }
+.order-table th:nth-child(2), .order-table td:nth-child(2) { width:48px; text-align:center; }
+.order-table th:nth-child(3), .order-table td:nth-child(3) { width:95px; }
+.order-table th:nth-child(4), .order-table td:nth-child(4) { width:75px; }
+.order-table th:nth-child(5), .order-table td:nth-child(5) { width:130px; }
+.order-table th:nth-child(6), .order-table td:nth-child(6) { width:85px; }
+.order-table th:nth-child(7), .order-table td:nth-child(7) { width:95px; }
+.order-table th:nth-child(8), .order-table td:nth-child(8) { width:80px; }
+.order-table th:nth-child(9), .order-table td:nth-child(9) { width:58px; text-align:right; }
+.order-table th:nth-child(10), .order-table td:nth-child(10) { width:58px; text-align:right; }
+.order-table th:nth-child(11), .order-table td:nth-child(11) { width:58px; text-align:right; }
+.order-table th:nth-child(12), .order-table td:nth-child(12) { width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.order-table th:nth-child(13), .order-table td:nth-child(13) { width:115px; }
+.order-table th:nth-child(14), .order-table td:nth-child(14) { width:75px; text-align:center; }
+.order-table th:nth-child(15), .order-table td:nth-child(15) { width:125px; text-align:center; }
+.order-table th:nth-child(16), .order-table td:nth-child(16) { width:125px; text-align:center; }
+/* 小按钮：操作列横向排列 */
+.order-table .btn-sm { padding:3px 8px; font-size:11px; border-radius:5px; margin-right:2px; white-space:nowrap; }
+.order-table .btn-sm:last-child { margin-right:0; }
+/* 单元格内长文本截断 */
+.cell-ellipsis { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block; vertical-align:middle; }
+
+/* 缸号列：超过4个时自动双排（每行2个），避免拉长整表 */
+.order-table td.batch-cell { white-space:normal; }
+.batch-list { display:flex; flex-wrap:nowrap; gap:4px; }
+.batch-list.multi { flex-wrap:wrap; }
+.batch-item { flex:0 0 auto; white-space:nowrap; }
+.batch-list.multi .batch-item { flex:0 0 calc(50% - 2px); }

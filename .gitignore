@@ -1,0 +1,16 @@
+# 本地开发杂物（不部署到 GitHub Pages）
+__pycache__/
+*.py
+*.pyc
+server.js
+start.bat
+inspect_out.txt
+inspect_tc.py
+extract_pdf.py
+extract_tc_orders.py
+find_number.py
+read_tc_sample.py
+read_xls.py
+test_*.js
+screenshot-*.png
+*.png
