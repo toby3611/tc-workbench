@@ -27,7 +27,7 @@
       try { pdfjsLib.GlobalWorkerOptions.workerSrc = 'assets/lib/pdf.worker.min.js'; } catch(e){}
     }
     DataStore.ensureSeed();
-    const boot = function(){ bindLogin(); checkSession(); };
+    const boot = function(){ migrateSystems(); bindLogin(); checkSession(); };
     if(DataStore.isGithubEnabled()){
       // 启用云端时，先拉取共享数据再渲染（云端为真相源，本机仅缓存）
       DataStore.syncPull().then(boot).catch(function(e){
@@ -761,6 +761,42 @@
     return html;
   }
 
+  // ---------- 系统接入迁移与本地密码 ----------
+  // 自动把已配置的系统（如 ECOCERT）标记为已接入并补全网址/账号；不破坏现有数据，不写密码。
+  function migrateSystems(){
+    try {
+      const settings = DataStore.load('settings') || {};
+      settings.systems = settings.systems || {};
+      const ECO = { name:'ECOCERT NTC', standards:['GRS','RCS','GOTS','OCS'], status:'已接入', url:'https://ntc.ecocert.cc/client', account:'vananhdao42@gmail.com' };
+      let changed = false;
+      if(!settings.systems.ECOCERT){
+        settings.systems.ECOCERT = { name:ECO.name, standards:ECO.standards, status:ECO.status, url:ECO.url, account:ECO.account };
+        changed = true;
+      } else {
+        const s = settings.systems.ECOCERT;
+        if(s.status !== '已接入'){ s.status = '已接入'; changed = true; }
+        if(!s.url){ s.url = ECO.url; changed = true; }
+        if(!s.account){ s.account = ECO.account; changed = true; }
+        if(!s.name || s.name === 'ECOCERT'){ s.name = ECO.name; changed = true; }
+      }
+      if(changed){ DataStore.save('settings', settings); }
+    } catch(e){ console.warn('migrateSystems 失败：', e); }
+  }
+
+  // 仅本机保存系统密码（独立键 tc_syspwd_<key>，不在同步集合内，绝不随云端上传）
+  function saveSysPwd(key){
+    const el = document.getElementById('syspwd-' + key);
+    if(!el) return;
+    try { localStorage.setItem('tc_syspwd_' + key, el.value); } catch(e){}
+    el.style.borderColor = '#2E7D32';
+    setTimeout(function(){ el.style.borderColor = '#ddd'; }, 1200);
+  }
+  function toggleSysPwd(key){
+    const el = document.getElementById('syspwd-' + key);
+    if(!el) return;
+    el.type = (el.type === 'password') ? 'text' : 'password';
+  }
+
   // ---------- 系统配置 ----------
   function renderSettings(){
     const settings = DataStore.load('settings') || {};
@@ -772,9 +808,24 @@
     html += '<div class="card"><h3>双系统接入状态</h3>';
     for(const key in systems){
       const sys = systems[key];
-      html += '<div style="margin-bottom:10px;padding:10px;background:#f7f7f6;border-radius:6px;">';
-      html += '<strong>'+sys.name+'</strong> <span class="badge '+ (sys.status==='已接入'?'ok':'warn') +'">'+sys.status+'</span>';
+      let savedPwd = '';
+      try { savedPwd = localStorage.getItem('tc_syspwd_' + key) || ''; } catch(e){}
+      html += '<div style="margin-bottom:12px;padding:10px;background:#f7f7f6;border-radius:6px;">';
+      html += '<strong>'+escapeHtml(sys.name||key)+'</strong> <span class="badge '+ (sys.status==='已接入'?'ok':'warn') +'">'+escapeHtml(sys.status||'')+'</span>';
       html += '<div style="color:#888;font-size:12px;margin-top:4px;">负责标准：'+sys.standards.join('、')+'</div>';
+      if(sys.url){
+        html += '<div style="margin-top:6px;font-size:13px;"><a href="'+escapeHtml(sys.url)+'" target="_blank" rel="noopener" style="color:#185FA5;text-decoration:none;">🔗 打开系统 ↗</a> <span style="color:#888;">'+escapeHtml(sys.url)+'</span></div>';
+      }
+      if(sys.account){
+        html += '<div style="margin-top:4px;font-size:13px;color:#444;">账号：'+escapeHtml(sys.account)+'</div>';
+      }
+      // 仅本机密码（独立 localStorage 键，不在 DataStore.COLLECTIONS 内，绝不随云端同步上传）
+      html += '<div style="margin-top:8px;font-size:12px;">';
+      html += '<label style="display:block;margin-bottom:4px;color:#666;">记住密码（仅本机浏览器保存，开启云端同步也不会上传仓库）</label>';
+      html += '<input id="syspwd-'+key+'" type="password" value="'+escapeHtml(savedPwd)+'" placeholder="输入后点保存" style="width:58%;padding:5px;border:1px solid #ddd;border-radius:4px;font-size:12px;"> ';
+      html += '<button class="btn" style="padding:5px 10px;font-size:12px;" onclick="App.saveSysPwd(\''+key+'\')">保存</button> ';
+      html += '<button class="btn" style="padding:5px 10px;font-size:12px;" onclick="App.toggleSysPwd(\''+key+'\')">显示/隐藏</button>';
+      html += '</div>';
       html += '</div>';
     }
     html += '</div>';
@@ -1546,7 +1597,7 @@
     renderMain();
   }
 
-  window.App = { toggleOrder: toggleOrder, editOrder: editOrder, cancelEdit: cancelEdit, saveOrder: saveOrder, deleteOrder: deleteOrder, toggleNewOrderForm: toggleNewOrderForm, previewNewFiles: previewNewFiles, createOrderFromFile: createOrderFromFile, uploadOrderFile: uploadOrderFile, uploadQuotaFile: uploadQuotaFile, deleteQuota: deleteQuota, saveFieldDict: saveFieldDict, importIssuedTC: importIssuedTC, saveGithubConfig: saveGithubConfig, syncPull: syncPull, syncPush: syncPush };
+  window.App = { toggleOrder: toggleOrder, editOrder: editOrder, cancelEdit: cancelEdit, saveOrder: saveOrder, deleteOrder: deleteOrder, toggleNewOrderForm: toggleNewOrderForm, previewNewFiles: previewNewFiles, createOrderFromFile: createOrderFromFile, uploadOrderFile: uploadOrderFile, uploadQuotaFile: uploadQuotaFile, deleteQuota: deleteQuota, saveFieldDict: saveFieldDict, importIssuedTC: importIssuedTC, saveGithubConfig: saveGithubConfig, syncPull: syncPull, syncPush: syncPush, saveSysPwd: saveSysPwd, toggleSysPwd: toggleSysPwd };
 
   // 启动
   if(document.readyState === 'loading'){
