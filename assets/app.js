@@ -797,6 +797,21 @@
     el.type = (el.type === 'password') ? 'text' : 'password';
   }
 
+  // 保存系统的登录地址 / 账号（写入 settings，开启云端同步会随之推送；密码仍仅本机）
+  function saveSysInfo(key){
+    const urlEl = document.getElementById('sysurl-' + key);
+    const accEl = document.getElementById('sysaccount-' + key);
+    if(!urlEl) return;
+    const settings = DataStore.load('settings') || {};
+    const systems = settings.systems || {};
+    if(!systems[key]) systems[key] = {};
+    systems[key].url = (urlEl.value || '').trim();
+    if(accEl) systems[key].account = (accEl.value || '').trim();
+    settings.systems = systems;
+    DataStore.save('settings', settings);
+    renderSettings();
+  }
+
   // ---------- 系统配置 ----------
   function renderSettings(){
     const settings = DataStore.load('settings') || {};
@@ -813,11 +828,18 @@
       html += '<div style="margin-bottom:12px;padding:10px;background:#f7f7f6;border-radius:6px;">';
       html += '<strong>'+escapeHtml(sys.name||key)+'</strong> <span class="badge '+ (sys.status==='已接入'?'ok':'warn') +'">'+escapeHtml(sys.status||'')+'</span>';
       html += '<div style="color:#888;font-size:12px;margin-top:4px;">负责标准：'+sys.standards.join('、')+'</div>';
+      // 可编辑的登录地址与账号
+      html += '<div style="margin-top:8px;font-size:12px;">';
+      html += '<label style="display:block;margin-bottom:4px;color:#666;">登录地址（保存后即刻可点「打开系统」）</label>';
+      html += '<input id="sysurl-'+key+'" type="text" value="'+escapeHtml(sys.url||'')+'" placeholder="粘贴 ICU / ECOCERT 系统网址" style="width:72%;padding:5px;border:1px solid #ddd;border-radius:4px;font-size:12px;"> ';
+      html += '</div>';
+      html += '<div style="margin-top:6px;font-size:12px;">';
+      html += '<label style="display:block;margin-bottom:4px;color:#666;">登录账号</label>';
+      html += '<input id="sysaccount-'+key+'" type="text" value="'+escapeHtml(sys.account||'')+'" placeholder="账号" style="width:72%;padding:5px;border:1px solid #ddd;border-radius:4px;font-size:12px;"> ';
+      html += '<button class="btn" style="padding:5px 10px;font-size:12px;" onclick="App.saveSysInfo(\''+key+'\')">保存</button>';
+      html += '</div>';
       if(sys.url){
         html += '<div style="margin-top:6px;font-size:13px;"><a href="'+escapeHtml(sys.url)+'" target="_blank" rel="noopener" style="color:#185FA5;text-decoration:none;">🔗 打开系统 ↗</a> <span style="color:#888;">'+escapeHtml(sys.url)+'</span></div>';
-      }
-      if(sys.account){
-        html += '<div style="margin-top:4px;font-size:13px;color:#444;">账号：'+escapeHtml(sys.account)+'</div>';
       }
       // 仅本机密码（独立 localStorage 键，不在 DataStore.COLLECTIONS 内，绝不随云端同步上传）
       html += '<div style="margin-top:8px;font-size:12px;">';
