@@ -779,6 +779,16 @@
         if(!s.account){ s.account = ECO.account; changed = true; }
         if(!s.name || s.name === 'ECOCERT'){ s.name = ECO.name; changed = true; }
       }
+      const CU = { name:'Control Union', standards:['Regenagri'], status:'已接入', url:'https://certifications.controlunion.com/icu/zh-Hans/login' };
+      if(!settings.systems.CU){
+        settings.systems.CU = { name:CU.name, standards:CU.standards, status:CU.status, url:CU.url };
+        changed = true;
+      } else {
+        const s = settings.systems.CU;
+        if(s.status !== '已接入'){ s.status = '已接入'; changed = true; }
+        if(!s.url){ s.url = CU.url; changed = true; }
+        if(!s.name || s.name === 'CU'){ s.name = CU.name; changed = true; }
+      }
       if(changed){ DataStore.save('settings', settings); }
     } catch(e){ console.warn('migrateSystems 失败：', e); }
   }

@@ -79,7 +79,7 @@ window.SEED = {
   },
   settings: {
     systems: {
-      CU: { name:'Control Union', standards:['Regenagri'], status:'已接入' },
+      CU: { name:'Control Union', standards:['Regenagri'], status:'已接入', url:'https://certifications.controlunion.com/icu/zh-Hans/login' },
       ECOCERT: { name:'ECOCERT NTC', standards:['GRS','RCS','GOTS','OCS'], status:'已接入', url:'https://ntc.ecocert.cc/client', account:'vananhdao42@gmail.com' }
     }
   }
