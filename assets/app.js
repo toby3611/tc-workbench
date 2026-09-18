@@ -1597,7 +1597,7 @@
     renderMain();
   }
 
-  window.App = { toggleOrder: toggleOrder, editOrder: editOrder, cancelEdit: cancelEdit, saveOrder: saveOrder, deleteOrder: deleteOrder, toggleNewOrderForm: toggleNewOrderForm, previewNewFiles: previewNewFiles, createOrderFromFile: createOrderFromFile, uploadOrderFile: uploadOrderFile, uploadQuotaFile: uploadQuotaFile, deleteQuota: deleteQuota, saveFieldDict: saveFieldDict, importIssuedTC: importIssuedTC, saveGithubConfig: saveGithubConfig, syncPull: syncPull, syncPush: syncPush, saveSysPwd: saveSysPwd, toggleSysPwd: toggleSysPwd };
+  window.App = { toggleOrder: toggleOrder, editOrder: editOrder, cancelEdit: cancelEdit, saveOrder: saveOrder, deleteOrder: deleteOrder, toggleNewOrderForm: toggleNewOrderForm, previewNewFiles: previewNewFiles, createOrderFromFile: createOrderFromFile, uploadOrderFile: uploadOrderFile, uploadQuotaFile: uploadQuotaFile, deleteQuota: deleteQuota, saveFieldDict: saveFieldDict, importIssuedTC: importIssuedTC, saveGithubConfig: saveGithubConfig, syncPull: syncPull, syncPush: syncPush, saveSysPwd: saveSysPwd, toggleSysPwd: toggleSysPwd, saveSysInfo: saveSysInfo };
 
   // 启动
   if(document.readyState === 'loading'){
