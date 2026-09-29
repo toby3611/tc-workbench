@@ -113,7 +113,7 @@
 
   function bindStaticNav(){
     document.querySelectorAll('.nav-menu li[data-view]').forEach(function(li){
-      li.addEventListener('click', function(){ selectModule('settings'); });
+      li.addEventListener('click', function(){ selectModule(li.dataset.view); });
     });
   }
 
@@ -134,7 +134,8 @@
     const views = [
       {key:'orders', label:'订单管理'},
       {key:'quotas', label:'原纱额度汇总'},
-      {key:'certificates', label:'证书库'}
+      {key:'certificates', label:'证书库'},
+      {key:'issued', label:'已开证 TC'}
     ];
     let html = '<div class="sub-tabs">';
     views.forEach(function(v){
@@ -163,6 +164,7 @@
       if(currentSubView === 'orders') html += renderOrders();
       else if(currentSubView === 'quotas') html += renderQuotas();
       else if(currentSubView === 'certificates') html += renderCertificates();
+      else if(currentSubView === 'issued') html += renderIssuedTC();
       main.innerHTML = html;
       bindSubTabs();
     }
@@ -767,17 +769,18 @@
     try {
       const settings = DataStore.load('settings') || {};
       settings.systems = settings.systems || {};
-      const ECO = { name:'ECOCERT NTC', standards:['GRS','RCS','GOTS','OCS'], status:'已接入', url:'https://ntc.ecocert.cc/client', account:'vananhdao42@gmail.com' };
+      const ECO = { name:'ECOCERT NTC', standards:['GRS','RCS','GOTS','OCS'], status:'已接入', url:'https://ntc.ecocert.cc/client' };
       let changed = false;
       if(!settings.systems.ECOCERT){
-        settings.systems.ECOCERT = { name:ECO.name, standards:ECO.standards, status:ECO.status, url:ECO.url, account:ECO.account };
+        settings.systems.ECOCERT = { name:ECO.name, standards:ECO.standards, status:ECO.status, url:ECO.url };
         changed = true;
       } else {
         const s = settings.systems.ECOCERT;
         if(s.status !== '已接入'){ s.status = '已接入'; changed = true; }
         if(!s.url){ s.url = ECO.url; changed = true; }
-        if(!s.account){ s.account = ECO.account; changed = true; }
         if(!s.name || s.name === 'ECOCERT'){ s.name = ECO.name; changed = true; }
+        // 清理：不保留登录账号信息
+        if(s.account){ delete s.account; changed = true; }
       }
       const CU = { name:'Control Union', standards:['Regenagri'], status:'已接入', url:'https://certifications.controlunion.com/icu/zh-Hans/login' };
       if(!settings.systems.CU){
@@ -1627,6 +1630,68 @@
     if(window.__expandedOrder === id) window.__expandedOrder = null;
     if(window.__editingOrder === id) window.__editingOrder = null;
     renderMain();
+  }
+
+  // ---------- 已开证 TC（按标准归档，只读） ----------
+  // 数据源：ecocert_issued.json —— 由 ECOCERT NTC 系统导出的「已签发」TC。
+  // 每个标准模块下单独成页，只展示属于该标准的记录。
+  let issuedData = null; // 全量缓存，避免反复请求
+
+  function renderIssuedTC(){
+    setTimeout(function(){ loadIssuedTC(); }, 0);
+    return '<div id="issued-body"><div class="empty">正在加载已开证 TC 数据…</div></div>';
+  }
+
+  async function loadIssuedTC(){
+    const body = document.getElementById('issued-body');
+    if(!body) return;
+    const std = currentStandard; // 当前标准 key，如 GRS / RCS / GOTS / OCS / Regenagri
+    const stdShort = standardShort(std);
+    const stdCfg = (DataStore.load('standards')||[]).find(function(x){ return x.key === std; }) || {};
+    const agencyName = stdCfg.agency || stdCfg.systemName || stdCfg.system || '';
+    try {
+      if(!issuedData){
+        const res = await fetch('ecocert_issued.json', { cache:'no-store' });
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        const json = await res.json();
+        issuedData = json.rows || json.data || [];
+      }
+      // 异步返回后若用户已切到别的标准/子页，放弃这次渲染，避免串数据
+      if(currentStandard !== std || currentSubView !== 'issued') return;
+
+      const rows = issuedData.filter(function(r){ return r['认证标准'] === std; });
+
+      if(!rows.length){
+        let tip = '<div class="empty">'+stdShort+' 暂无已开证 TC 记录。</div>';
+        if(agencyName === 'CU'){
+          tip = '<div class="empty">'+stdShort+' 的已开证 TC 由 '+agencyName+' 系统签发，目前尚未导入本标准的记录。<br>如需在此展示，可从 CU / ICU 系统导出后导入。</div>';
+        }
+        body.innerHTML = '<div class="card">'+tip+'</div>';
+        return;
+      }
+
+      // 新证在前
+      const sorted = rows.slice().sort(function(a, b){
+        return String(b['发证日期']||'').localeCompare(String(a['发证日期']||''));
+      });
+      // 标准已在当前页面标题体现，故不再重复「认证标准」列
+      const cols = ['申请单号','SC证书编号','TC证书编号','发证日期','状态','责任TCO','审核人','买家名称','关联单据','单据状态'];
+
+      let html = '<div class="card" style="overflow-x:auto;">';
+      html += '<div style="font-size:12px;color:#666;margin-bottom:8px;">共 <strong>'+sorted.length+'</strong> 条 '+stdShort+' 已开证 TC（状态=已签发），来源 '+(agencyName||'发证机构')+' 系统导出。</div>';
+      html += '<table class="order-table"><thead><tr>';
+      cols.forEach(function(c){ html += '<th>'+c+'</th>'; });
+      html += '</tr></thead><tbody>';
+      sorted.forEach(function(r){
+        html += '<tr>';
+        cols.forEach(function(c){ html += '<td>'+escapeHtml(r[c]!=null?r[c]:'')+'</td>'; });
+        html += '</tr>';
+      });
+      html += '</tbody></table></div>';
+      body.innerHTML = html;
+    } catch(e){
+      body.innerHTML = '<div class="empty">加载失败：'+escapeHtml(e.message)+'（请通过本地服务器或部署后访问，直接 file:// 打开无法读取数据）</div>';
+    }
   }
 
   window.App = { toggleOrder: toggleOrder, editOrder: editOrder, cancelEdit: cancelEdit, saveOrder: saveOrder, deleteOrder: deleteOrder, toggleNewOrderForm: toggleNewOrderForm, previewNewFiles: previewNewFiles, createOrderFromFile: createOrderFromFile, uploadOrderFile: uploadOrderFile, uploadQuotaFile: uploadQuotaFile, deleteQuota: deleteQuota, saveFieldDict: saveFieldDict, importIssuedTC: importIssuedTC, saveGithubConfig: saveGithubConfig, syncPull: syncPull, syncPush: syncPush, saveSysPwd: saveSysPwd, toggleSysPwd: toggleSysPwd, saveSysInfo: saveSysInfo };
