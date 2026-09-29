@@ -1633,9 +1633,9 @@
   }
 
   // ---------- 已开证 TC（按标准归档，只读） ----------
-  // 数据源：ecocert_issued.json —— 由 ECOCERT NTC 系统导出的「已签发」TC。
+  // 数据源：ecocert_issued.json（ECOCERT）/ regenagri_issued.json（Control Union CU）
   // 每个标准模块下单独成页，只展示属于该标准的记录。
-  let issuedData = null; // 全量缓存，避免反复请求
+  const issuedCache = {}; // 按文件名缓存，避免反复请求
 
   function renderIssuedTC(){
     setTimeout(function(){ loadIssuedTC(); }, 0);
@@ -1648,23 +1648,25 @@
     const std = currentStandard; // 当前标准 key，如 GRS / RCS / GOTS / OCS / Regenagri
     const stdShort = standardShort(std);
     const stdCfg = (DataStore.load('standards')||[]).find(function(x){ return x.key === std; }) || {};
-    const agencyName = stdCfg.agency || stdCfg.systemName || stdCfg.system || '';
+    const agencyName = stdCfg.agency || stdCfg.systemName || stdCfg.system || (std === 'Regenagri' ? 'Control Union (CU)' : 'ECOCERT');
+    const file = (std === 'Regenagri') ? 'regenagri_issued.json' : 'ecocert_issued.json';
     try {
-      if(!issuedData){
-        const res = await fetch('ecocert_issued.json', { cache:'no-store' });
+      if(!issuedCache[file]){
+        const res = await fetch(file, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const json = await res.json();
-        issuedData = json.rows || json.data || [];
+        issuedCache[file] = json.rows || json.data || [];
       }
       // 异步返回后若用户已切到别的标准/子页，放弃这次渲染，避免串数据
       if(currentStandard !== std || currentSubView !== 'issued') return;
 
-      const rows = issuedData.filter(function(r){ return r['认证标准'] === std; });
+      const all = issuedCache[file];
+      const rows = all.filter(function(r){ return r['认证标准'] === std; });
 
       if(!rows.length){
         let tip = '<div class="empty">'+stdShort+' 暂无已开证 TC 记录。</div>';
-        if(agencyName === 'CU'){
-          tip = '<div class="empty">'+stdShort+' 的已开证 TC 由 '+agencyName+' 系统签发，目前尚未导入本标准的记录。<br>如需在此展示，可从 CU / ICU 系统导出后导入。</div>';
+        if(std === 'Regenagri'){
+          tip = '<div class="empty">'+stdShort+' 的已开证 TC 由 Control Union（CU）系统签发，目前尚未导入本标准的记录。<br>如需在此展示，可从 CU / ICU 系统导出后导入。</div>';
         }
         body.innerHTML = '<div class="card">'+tip+'</div>';
         return;
@@ -1674,11 +1676,17 @@
       const sorted = rows.slice().sort(function(a, b){
         return String(b['发证日期']||'').localeCompare(String(a['发证日期']||''));
       });
-      // 标准已在当前页面标题体现，故不再重复「认证标准」列
-      const cols = ['申请单号','SC证书编号','TC证书编号','发证日期','状态','责任TCO','审核人','买家名称','关联单据','单据状态'];
+      // Regenagri 来自 CU，字段不同；其余沿用 ECOCERT 列
+      const cols = (std === 'Regenagri')
+        ? ['TC证书编号','买家名称','净重(kg)','发证日期','状态','CB名称','关联单据','单据状态']
+        : ['申请单号','SC证书编号','TC证书编号','发证日期','状态','责任TCO','审核人','买家名称','关联单据','单据状态'];
 
       let html = '<div class="card" style="overflow-x:auto;">';
-      html += '<div style="font-size:12px;color:#666;margin-bottom:8px;">共 <strong>'+sorted.length+'</strong> 条 '+stdShort+' 已开证 TC（状态=已签发），来源 '+(agencyName||'发证机构')+' 系统导出。</div>';
+      let srcLine = '共 <strong>'+sorted.length+'</strong> 条 '+stdShort+' 已开证 TC（状态=已签发），来源 '+(agencyName||'发证机构')+' 系统导出。';
+      if(std === 'Regenagri'){
+        srcLine += ' <a href="https://certifications.controlunion.com/icu/zh-Hans/clients/69437777-9f5a-45a5-99f3-97e8ec60d58b/program_group/858f1e49-2195-41f1-90fd-983940f40114/tclibrary/outgoing" target="_blank" rel="noopener" style="color:#1a73e8;">前往 CU 系统核对/导出 ↗</a>';
+      }
+      html += '<div style="font-size:12px;color:#666;margin-bottom:8px;">'+srcLine+'</div>';
       html += '<table class="order-table"><thead><tr>';
       cols.forEach(function(c){ html += '<th>'+c+'</th>'; });
       html += '</tr></thead><tbody>';
